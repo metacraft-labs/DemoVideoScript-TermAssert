@@ -1,0 +1,33 @@
+# dvs3 mutation results — 2026-10-27 19:22:41 +0200
+# kill command: just test
+
+KILLED   T1      163.6s  an SGR report one cell off
+           | /home/zahary/m/codetracer-gui/dvs-ta/tests/support/slow_redraw.nim(9, 19) Warning: imported and not used: 'os' [UnusedImport]
+           | DVS_NOTES_TUI=/tmp/nix-shell.PdTsYD/dvs3-mut-8raqg_4e/bin/notes-tui /tmp/nix-shell.PdTsYD/dvs3-mut-8raqg_4e/bin/dvs-termassert-notes conformance --pack /home/za
+           | error: Recipe `test-conformance` failed on line 39 with exit code 1
+KILLED   T2      148.2s  the Shift modifier dropped
+           | /home/zahary/m/codetracer-gui/dvs-ta/tests/support/slow_redraw.nim(9, 19) Warning: imported and not used: 'os' [UnusedImport]
+           | DVS_NOTES_TUI=/tmp/nix-shell.PdTsYD/dvs3-mut-8raqg_4e/bin/notes-tui /tmp/nix-shell.PdTsYD/dvs3-mut-8raqg_4e/bin/dvs-termassert-notes conformance --pack /home/za
+           | error: Recipe `test-conformance` failed on line 39 with exit code 1
+KILLED   T3      170.3s  the drag capability declared without motion tracking
+           | /home/zahary/m/codetracer-gui/dvs-ta/tests/test_adapter.nim(6, 60) Warning: imported and not used: 'strtabs' [UnusedImport]
+           | Error: execution of an external program failed: '/tmp/nix-shell.PdTsYD/dvs3-mut-8raqg_4e/test-bin/test_adapter'
+           | error: Recipe `test-adapter` failed on line 44 with exit code 1
+KILLED   T4      121.2s  a stale screen read: the screen is not re-read after an input
+           | /home/zahary/m/codetracer-gui/dvs-ta/tests/support/slow_redraw.nim(9, 19) Warning: imported and not used: 'os' [UnusedImport]
+           | DVS_NOTES_TUI=/tmp/nix-shell.PdTsYD/dvs3-mut-8raqg_4e/bin/notes-tui /tmp/nix-shell.PdTsYD/dvs3-mut-8raqg_4e/bin/dvs-termassert-notes conformance --pack /home/za
+           | error: Recipe `test-conformance` failed on line 39 with exit code 1
+KILLED   T5      106.4s  settled after one quiet window: before the screen stopped changing
+           | /home/zahary/m/codetracer-gui/dvs-ta/tests/support/slow_redraw.nim(9, 19) Warning: imported and not used: 'os' [UnusedImport]
+           | DVS_NOTES_TUI=/tmp/nix-shell.PdTsYD/dvs3-mut-8raqg_4e/bin/notes-tui /tmp/nix-shell.PdTsYD/dvs3-mut-8raqg_4e/bin/dvs-termassert-notes conformance --pack /home/za
+           | error: Recipe `test-conformance` failed on line 39 with exit code 1
+KILLED   T5b      57.0s  settled after a 1 ms quiet window
+           | DVS_NOTES_TUI=/tmp/nix-shell.PdTsYD/dvs3-mut-8raqg_4e/bin/notes-tui DVS_BIN_DIR=/tmp/nix-shell.PdTsYD/dvs3-mut-8raqg_4e/bin DVS_ROOT=/home/zahary/m/codetracer-g
+           | Error: execution of an external program failed: '/tmp/nix-shell.PdTsYD/dvs3-mut-8raqg_4e/test-bin/test_adapter'
+           | error: Recipe `test-adapter` failed on line 44 with exit code 1
+KILLED   T6      137.0s  a named key sent without the modifier TermAssert cannot spell
+           | DVS_NOTES_TUI=/tmp/nix-shell.PdTsYD/dvs3-mut-8raqg_4e/bin/notes-tui DVS_BIN_DIR=/tmp/nix-shell.PdTsYD/dvs3-mut-8raqg_4e/bin DVS_ROOT=/home/zahary/m/codetracer-g
+           | Error: execution of an external program failed: '/tmp/nix-shell.PdTsYD/dvs3-mut-8raqg_4e/test-bin/test_adapter'
+           | error: Recipe `test-adapter` failed on line 44 with exit code 1
+
+7/7 killed, 0 survived

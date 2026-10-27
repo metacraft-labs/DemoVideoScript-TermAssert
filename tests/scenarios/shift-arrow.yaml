@@ -1,0 +1,10 @@
+scenario: 1
+name: termassert/shift-arrow
+pack: notes-app
+stage:
+  - use: seed-notes
+    with: { fixture: two-notes.json }
+  - use: launch-app
+steps:
+  - click: 'note-list/note[title="Taxes"]'
+  - chord: Shift+Down

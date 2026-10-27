@@ -1,6 +1,6 @@
 nimcache/
 build/
-*.exe
 .direnv/
 result
 result-*
+__pycache__/
