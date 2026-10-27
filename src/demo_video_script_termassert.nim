@@ -166,34 +166,24 @@ const namedKeys = {"Enter": "enter", "Esc": "esc", "Tab": "tab", "Backspace": "b
                    "F9": "f9", "F10": "f10", "F11": "f11", "F12": "f12"}.toTable
 
 proc sendKey(a: Adapter; key: string; mods: set[KeyModifier]) =
+  ## Through TermAssert's `sendKey`, which encodes modifiers as a terminal
+  ## does and raises for a combination no terminal expresses.
   if key in ["Ctrl", "Shift", "Alt", "Meta", "Mod"]:
     raise refuse("a terminal cannot deliver the " & key & " key on its own")
-  if namedKeys.hasKey(key):
-    if key == "Tab" and mods == {kmShift}:
-      a.ctx.sess.sendKey("backtab")
-      return
-    if kmShift in mods or kmCtrl in mods:
-      raise refuse("TermAssert's sendKey cannot spell " & (if kmShift in mods: "Shift+" else: "Ctrl+") &
-        key & " (it would drop the modifier)")
-    a.ctx.sess.sendKey((if kmAlt in mods: "alt+" else: "") & namedKeys[key])
+  var name = (if namedKeys.hasKey(key): namedKeys[key] elif key == "Plus": "+" else: key)
+  if not namedKeys.hasKey(key) and name.runeLen != 1:
+    raise refuse("no terminal encoding for the key '" & key & "'")
+  if name.len > 1 and not namedKeys.hasKey(key):
+    # one non-ASCII character: typed as itself, and only without modifiers
+    if mods != {}: raise refuse("a terminal cannot deliver modifiers with '" & key & "'")
+    a.ctx.sess.send(name)
     return
-  var ch = (if key == "Plus": "+" else: key)
-  if ch.runeLen != 1: raise refuse("no terminal encoding for the key '" & key & "'")
-  var m = mods
-  if kmShift in m and ch.len == 1 and ch[0] in {'a'..'z'}:
-    ch = $ch[0].toUpperAscii
-    m.excl kmShift
-  elif kmShift in m and not (ch.len == 1 and ch[0] in {'A'..'Z'}):
-    m.excl kmShift  # a shifted symbol is the symbol itself
-  if kmShift in m: m.excl kmShift
-  if kmCtrl in m:
-    if not (ch.len == 1 and ch[0] in {'a'..'z', 'A'..'Z'}):
-      raise refuse("a terminal cannot deliver Ctrl+" & key)
-    a.ctx.sess.sendKey((if kmAlt in m: "alt+" else: "") & "ctrl+" & ch.toLowerAscii)
-  elif kmAlt in m:
-    a.ctx.sess.sendKey("alt+" & ch)
-  else:
-    a.ctx.sess.send(ch)
+  var prefix = ""
+  if kmCtrl in mods: prefix.add "ctrl+"
+  if kmAlt in mods: prefix.add "alt+"
+  if kmShift in mods: prefix.add "shift+"
+  try: a.ctx.sess.sendKey(prefix & name)
+  except KeyEncodingError as e: raise refuse(e.msg)
 
 proc pause(ms: float) =
   if ms > 0: sleep(int(ms + 0.5))

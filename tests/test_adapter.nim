@@ -3,7 +3,7 @@
 ## it records, and what it refuses. Every check runs the real application
 ## through the built `dvs-termassert-notes`; no stand-ins.
 
-import std/[json, os, osproc, strutils, unittest, streams, strtabs]
+import std/[json, os, osproc, strutils, unittest, streams]
 import nim_libvterm
 
 let bin = getEnv("DVS_BIN_DIR", "build/bin")
@@ -56,10 +56,15 @@ suite "the TermAssert adapter":
     check "binding.note.property.body" in caps
     check "binding.note.property.tags" in caps
 
-  test "a key TermAssert cannot spell is refused, never sent without its modifier":
+  test "Shift with a named key reaches the application":
     let r = runJson(here / "scenarios/shift-arrow.yaml", "termassert")
+    checkpoint $r["message"]
+    check r["outcome"].getStr == "passed"
+
+  test "a key no terminal can encode is refused, never sent without its modifier":
+    let r = runJson(here / "scenarios/ctrl-enter.yaml", "termassert")
     check r["outcome"].getStr == "failed"
-    check "cannot spell Shift+Down" in $r["steps"]
+    check "no terminal encoding for ctrl+enter" in $r["steps"]
 
   test "settled waits for the last of several redraw bursts":
     let slow = bin / "slow-redraw"

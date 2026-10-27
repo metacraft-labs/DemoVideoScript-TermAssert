@@ -6,7 +6,7 @@
 ## first row. Not a stand-in for anything: it is the smallest application with
 ## a multi-burst redraw.
 
-import std/[json, os, options, strutils, tables, times]
+import std/[json, options, strutils, tables, times]
 import term_assert
 import demo_video_script/[backend, cli]
 import demo_video_script_termassert

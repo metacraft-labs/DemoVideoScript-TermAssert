@@ -13,9 +13,9 @@ for out-of-process consumers.
 
 What it delivers, and what it refuses:
 
-- keys, chords and typing as a terminal sends them; Shift or Ctrl with a named key
-  (TermAssert's `sendKey` cannot spell it), the Meta modifier and a horizontal wheel
-  are refused, never sent without the modifier;
+- keys, chords and typing as a terminal sends them, modifiers encoded as xterm does;
+  a combination no terminal expresses (Ctrl+Enter, Ctrl+Shift+a), the Meta modifier and
+  a horizontal wheel are refused, never sent without the modifier;
 - clicks, the wheel, and — when the application enables motion tracking, which the
   binding declares — pointer moves, hovers and drags (TermAssert's press, motion and
   release);

@@ -28,9 +28,11 @@ ARMS = [
         "settled after one quiet window: before the screen stopped changing"),
     Arm("T5b", A, "const QuietMs = 60", "const QuietMs = 1",
         "settled after a 1 ms quiet window"),
-    Arm("T6", A, '''    if kmShift in mods or kmCtrl in mods:
-      raise refuse(''', '''    if false:
-      raise refuse(''', "a named key sent without the modifier TermAssert cannot spell"),
+    Arm("T6", A, '  if kmShift in mods: prefix.add "shift+"', '  discard',
+        "Shift dropped from a named key"),
+    Arm("T7", A, "  except KeyEncodingError as e: raise refuse(e.msg)",
+        "  except KeyEncodingError: a.ctx.sess.sendKey(name)",
+        "a key sent without the modifier no terminal can encode"),
 ]
 
 if __name__ == "__main__":

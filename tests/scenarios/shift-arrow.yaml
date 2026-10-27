@@ -8,3 +8,5 @@ stage:
 steps:
   - click: 'note-list/note[title="Taxes"]'
   - chord: Shift+Down
+  - expect: { at: 'note-list/note[title="Taxes"]', selected: true }
+  - expect: { at: 'note-list/note[title="Groceries"]', selected: true }

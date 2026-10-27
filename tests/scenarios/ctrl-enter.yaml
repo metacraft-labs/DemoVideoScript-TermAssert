@@ -1,0 +1,7 @@
+scenario: 1
+name: termassert/ctrl-enter
+pack: notes-app
+stage:
+  - use: launch-app
+steps:
+  - chord: Ctrl+Enter
