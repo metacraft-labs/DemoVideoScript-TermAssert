@@ -1,6 +1,6 @@
 # Siblings cloned by setup-dev-env, each at an explicit commit: the adapter is
 # built and qualified against exactly these.
-DemoVideoScript=a5640bfb72a03b179f46634ae08b877209b360c7  # DemoVideoScript@agents
+DemoVideoScript=989b9c744344778eee20f74a62840345c25171f6  # DemoVideoScript@agents: recordings, lanes, documentation captures
 TermAssert=ad74669955a242bf8be2de2b6b5bf8b087294914  # TermAssert@agents: drags, and keys with modifiers
 nim-libvterm=a96c190d57f3c8593e6f6116cc06f08c2bde7c10  # nim-libvterm@agents: Screen.mouseTracking
 nim-pty=2845abd58dd2073475177301590c8b51aa5c9094  # nim-pty@agents

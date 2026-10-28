@@ -16,7 +16,7 @@
 ## motion report the application did not ask for.
 
 import std/[json, os, strutils, times, monotimes, options, tables]
-from std/unicode import runes, runeLen, `$`
+from std/unicode import runes, runeLen, toRunes, runeAt, `$`
 import term_assert
 import demo_video_script/[backend, surface]
 
@@ -53,6 +53,10 @@ type
     t0: MonoTime
     offset: int
     events: seq[JsonNode]
+    deterministic: bool
+      ## A documentation capture: the cast is a frame of the screen per step,
+      ## on the virtual timeline, with the declared volatile regions masked —
+      ## the same bytes on every run.
 
   Adapter = ref object
     b: TermBinding
@@ -91,7 +95,7 @@ proc requireRunning(a: Adapter) =
 
 proc sample(a: Adapter) =
   ## Appends the bytes the application wrote since the last sample to the cast.
-  if not a.rec.on or not a.ctx.running: return
+  if not a.rec.on or not a.ctx.running or a.rec.deterministic: return
   discard a.ctx.sess.drainOutput(0)
   let bytes = a.ctx.sess.transcriptBytes()
   if bytes.len > a.rec.offset:
@@ -103,8 +107,9 @@ proc writeCast(a: Adapter): string =
   result = a.rec.dir / "session.cast"
   var f = open(result, fmWrite)
   defer: f.close()
-  f.writeLine $(%*{"version": 2, "width": a.ctx.width, "height": a.ctx.height,
-                   "timestamp": int(epochTime())})
+  var header = %*{"version": 2, "width": a.ctx.width, "height": a.ctx.height}
+  if not a.rec.deterministic: header["timestamp"] = %int(epochTime())
+  f.writeLine $header
   for e in a.rec.events: f.writeLine $e
 
 # --- the surface ------------------------------------------------------------------------
@@ -146,6 +151,25 @@ proc cellOf(a: Adapter; id, anchor: string): (int, int) =
     cell = r.get
   if a.defect == tdOffByOne: inc cell[0]
   cell
+
+proc maskedLines(a: Adapter; mask: JsonNode): seq[string] =
+  ## The screen's rows with every masked instance's cells drawn as `#`: a
+  ## declared volatile region is the same in every capture.
+  result = a.ctx.lines
+  if mask == nil or mask.len == 0: return
+  a.refresh()
+  for id in mask.getElems:
+    let n = a.idx.lookup(a.tree, id.getStr)
+    for r in int(n.y) ..< min(result.len, int(n.y + n.h)):
+      var runes = result[r].toRunes
+      for c in int(n.x) ..< min(runes.len, int(n.x + n.w)): runes[c] = "#".runeAt(0)
+      result[r] = $runes
+
+proc frame(a: Adapter; seconds: float; mask: JsonNode) =
+  ## A deterministic cast's frame: the whole screen, redrawn.
+  var rows = a.maskedLines(mask)
+  for r in rows.mitems: r = r.strip(leading = false)
+  a.rec.events.add %*[seconds, "o", "\e[2J\e[H" & rows.join("\r\n")]
 
 # --- input ------------------------------------------------------------------------------
 
@@ -297,7 +321,7 @@ proc sendAction(a: Adapter; act: JsonNode) =
 proc capabilitiesFor(b: TermBinding): seq[string] =
   result = @["input.key", "input.chord", "input.text", "input.pointer.click", "input.wheel",
              "observe.text", "observe.geometry", "observe.focus", "sync.visual-settle",
-             "record.cast", "record.still"]
+             "record.cast", "record.still", "record.mask"]
   if b.tracking >= mtDrag: result.add "input.pointer.drag"
   if b.tracking == mtMove:
     result.add "input.pointer.move"
@@ -356,19 +380,32 @@ proc newTermAssertBackend*(binding: TermBinding; defect = tdNone): Backend =
     case op
     of recStart:
       a.rec = Recording(on: true, dir: args{"dir"}.getStr, t0: getMonoTime(),
-                        offset: (if a.ctx.running: a.ctx.sess.transcriptBytes().len else: 0))
+                        offset: (if a.ctx.running: a.ctx.sess.transcriptBytes().len else: 0),
+                        deterministic: args{"deterministic"}.getBool(false))
       # the cast starts from the current screen
       if a.ctx.running:
-        a.rec.events.add %*[0.0, "o", "\e[2J\e[H" & a.ctx.sess.screenContents().replace("\n", "\r\n")]
-    of recMark: a.sample()
+        if a.rec.deterministic: a.frame(0.0, args{"mask"})
+        else:
+          a.rec.events.add %*[0.0, "o", "\e[2J\e[H" & a.ctx.sess.screenContents().replace("\n", "\r\n")]
+    of recMark:
+      if a.rec.on and a.rec.deterministic and a.ctx.running:
+        discard a.ctx.sess.drainOutput(5)
+        a.frame(args{"virtualMs"}.getFloat / 1000, args{"mask"})
+      else: a.sample()
     of recStill:
       a.requireRunning()
       discard a.ctx.sess.drainOutput(5)
       let base = args{"dir"}.getStr(".") / args{"path"}.getStr("still")
       createDir(base.parentDir)
-      writeFile(base & ".txt", a.ctx.sess.screenContents())
-      writeFile(base & ".svg", renderSvg(a.ctx.sess.screen))
-      result["files"] = %[base & ".txt", base & ".svg"]
+      let mask = args{"mask"}
+      if mask != nil and mask.len > 0:
+        # TermAssert's renderers draw the screen as it is: a masked still is text
+        writeFile(base & ".txt", a.maskedLines(mask).join("\n") & "\n")
+        result["files"] = %[base & ".txt"]
+      else:
+        writeFile(base & ".txt", a.ctx.sess.screenContents())
+        writeFile(base & ".svg", renderSvg(a.ctx.sess.screen))
+        result["files"] = %[base & ".txt", base & ".svg"]
     of recStop:
       a.sample()
       if a.rec.on and a.rec.dir.len > 0:

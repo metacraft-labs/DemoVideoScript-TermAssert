@@ -1,0 +1,15 @@
+scenario: 1
+name: termassert/clock-capture
+pack: notes-app
+summary: Captures of a terminal application whose title row shows the live time of day.
+stage:
+  - use: seed-notes
+    with: { fixture: ../support/three-notes.json }
+  - use: launch-app
+    with: { clock: true }
+steps:
+  - expect: { at: clock, present: true }
+  - key: Down
+  - capture: { name: first-selected }
+  - key: Down
+  - capture: { name: second-selected }

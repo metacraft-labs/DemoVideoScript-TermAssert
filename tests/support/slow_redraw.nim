@@ -1,6 +1,11 @@
 ## A binding for a terminal application that answers each key in three bursts,
-## 50 ms apart ("a", then "ab", then "abc" on its first row), so `settled` can
-## be checked deterministically: it must not be reported before the last burst.
+## 150 ms apart ("a", then "ab", then "abc" on its first row), so `settled`
+## can be checked deterministically: it must not be reported before the last
+## burst. A quiet window is a drain that waits 60 ms of silence and then 60 ms
+## more with nothing read, so one quiet window needs a pause of 120 ms and the
+## two the adapter requires need 180 ms: a 150 ms pause tells them apart, and
+## settling after one window reads the screen mid-redraw (50 ms pauses could
+## not tell one window from two).
 ##
 ## The application is a real `sh` script in a real pty; the binding reads its
 ## first row. Not a stand-in for anything: it is the smallest application with
@@ -15,8 +20,8 @@ const script = """stty raw -echo; printf 'ready'
 while :; do
   c=$(dd bs=1 count=1 2>/dev/null) || exit 0
   [ -z "$c" ] && exit 0
-  printf '\r\033[2Ka'; sleep 0.05
-  printf '\r\033[2Kab'; sleep 0.05
+  printf '\r\033[2Ka'; sleep 0.15
+  printf '\r\033[2Kab'; sleep 0.15
   printf '\r\033[2Kabc'
 done"""
 

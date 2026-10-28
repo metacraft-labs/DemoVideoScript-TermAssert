@@ -38,7 +38,8 @@ proc roles(): JsonNode =
     "dialog-button": {"properties": ["label"], "affordances": ["click"]},
     "context-menu": {"properties": [], "affordances": []},
     "menu-item": {"properties": ["label", "enabled"], "affordances": ["click"]},
-    "status-bar": {"properties": ["message"], "affordances": []}}
+    "status-bar": {"properties": ["message"], "affordances": []},
+    "clock": {"properties": ["time"], "affordances": []}}
 
 proc fl(i: int): float = float(i)
 
@@ -142,6 +143,13 @@ proc parseScreen(ctx: TermContext): Tree =
       n.unreadable["position"] = "the list is scrolled, so a row's place in it is not on screen"
   list.focused = dlgRow < 0 and not (curOn and cur.row == 2)
   t.add(t.root, node("status-bar", 0, fl(h - 1), fl(w), 1, %*{"message": rows[h - 1].strip}))
+  # the clock in the title row, when the application shows one
+  let cc = (w - 8) div 2
+  let ct = rows[0].runeSlice(cc, cc + 8)
+  if ct.len == 8 and ct[2] == ':' and ct[5] == ':' and
+      ct[0 .. 1].allCharsInSet(Digits) and ct[3 .. 4].allCharsInSet(Digits) and
+      ct[6 .. 7].allCharsInSet(Digits):
+    t.add(t.root, node("clock", fl(cc), 0, 8, 1, %*{"time": ct}))
   if dlgRow >= 0:
     let dlg = node("dialog", fl(dlgCol), fl(dlgRow), fl(dlgW), 6, %*{"title": "Rename"},
                    @[("title", "Rename")])
@@ -179,9 +187,22 @@ proc notesBinding*(): TermBinding =
         let w = args{"width"}.getInt(60)
         let h = args{"height"}.getInt(16)
         a.add @["--width", $w, "--height", $h]
-        ctx.spawnApp(notesTuiPath(), a, w, h)
+        if ctx.state.hasKey("clockAt"): a.add @["--clock-at", ctx.state["clockAt"].getStr]
+        elif args{"clock"}.getBool(false):
+          a.add "--clock"
+          ctx.state["liveClock"] = %true
+        # a documentation capture's environment substitutions
+        var env: seq[(string, string)]
+        for k, v in args{"$env"}.getFields: env.add (k, v.getStr)
+        ctx.spawnApp(notesTuiPath(), a, w, h, env)
         ctx.sess.waitForText("Notes", initDuration(seconds = 10))
-      of "set-clock": discard
+      of "set-clock":
+        # stops the clock the application shows; one already showing the live
+        # time is not changed behind its back
+        if ctx.state{"liveClock"}.getBool(false):
+          raise newException(ValueError, "the application already shows the live clock; " &
+            "set the clock before launch-app")
+        ctx.state["clockAt"] = args{"time"}
       of "mark-started":
         let p = args{"path"}.getStr
         writeFile((if p.isAbsolute: p else: ctx.base / p), "the stage ran\n")
