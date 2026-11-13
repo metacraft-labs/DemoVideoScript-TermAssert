@@ -1,0 +1,9 @@
+scenario: 1
+name: termassert/window-focus-unasked
+pack: input-echo
+requires: [termassert]
+stage:
+  - use: launch-echo
+steps:
+  - ext: termassert.window-focus
+    with: { focused: true }

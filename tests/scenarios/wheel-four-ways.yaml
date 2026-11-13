@@ -1,0 +1,12 @@
+scenario: 1
+name: termassert/wheel-four-ways
+pack: input-echo
+stage:
+  - use: launch-echo
+steps:
+  - wheel: { at: screen, direction: left }
+  - wait: { until: { at: screen, text: { contains: "^[[<66;40;4M" } }, timeout: 5s }
+  - wheel: { at: screen, direction: right }
+  - wait: { until: { at: screen, text: { contains: "^[[<67;40;4M" } }, timeout: 5s }
+  - wheel: { at: screen, direction: up }
+  - wait: { until: { at: screen, text: { contains: "^[[<64;40;4M" } }, timeout: 5s }

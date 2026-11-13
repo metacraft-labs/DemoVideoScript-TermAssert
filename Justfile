@@ -26,6 +26,7 @@ build:
     nim c {{nim_flags}} -d:release {{paths}} --nimcache:{{build_dir}}/nimcache/dta -o:{{bin}}/dvs-termassert-notes conformance/dvs_termassert_notes.nim
     nim c {{nim_flags}} -d:release --nimcache:{{build_dir}}/nimcache/notes-tui -o:{{bin}}/notes-tui {{dvs_root}}/conformance/app/notes_tui.nim
     nim c {{nim_flags}} -d:release {{paths}} --nimcache:{{build_dir}}/nimcache/slow-redraw -o:{{bin}}/slow-redraw tests/support/slow_redraw.nim
+    nim c {{nim_flags}} -d:release {{paths}} --nimcache:{{build_dir}}/nimcache/input-echo -o:{{bin}}/input-echo tests/support/input_echo.nim
 
 test: build test-conformance test-adapter
 

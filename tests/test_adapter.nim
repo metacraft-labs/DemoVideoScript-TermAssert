@@ -66,6 +66,32 @@ suite "the TermAssert adapter":
     check r["outcome"].getStr == "failed"
     check "no terminal encoding for ctrl+enter" in $r["steps"]
 
+  proc runEcho(scenario: string): JsonNode =
+    let p = startProcess(bin / "input-echo", args = @["run", here / "scenarios" / scenario,
+        "--pack", here / "support/echo.pack.yaml", "--backend", "termassert", "--json",
+        "--record", "off"], options = {poStdErrToStdOut})
+    let o = p.outputStream.readAll()
+    discard p.waitForExit()
+    p.close()
+    for line in o.splitLines:
+      if line.startsWith("{"): return parseJson(line)
+    raise newException(ValueError, "no result: " & o)
+
+  test "the wheel turns four ways: SGR buttons 66 and 67 left and right":
+    let r = runEcho("wheel-four-ways.yaml")
+    checkpoint $r["steps"]
+    check r["outcome"].getStr == "passed"
+
+  test "the window's focus changes reach an application that asked for them":
+    let r = runEcho("window-focus.yaml")
+    checkpoint $r["steps"]
+    check r["outcome"].getStr == "passed"
+
+  test "a focus change is refused for an application that did not ask for reports":
+    let r = runEcho("window-focus-unasked.yaml")
+    check r["outcome"].getStr == "failed"
+    check "did not ask for focus reports" in $r["steps"]
+
   test "settled waits for the last of several redraw bursts":
     let slow = bin / "slow-redraw"
     for i in 1 .. 3:

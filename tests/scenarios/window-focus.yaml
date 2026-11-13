@@ -1,0 +1,14 @@
+scenario: 1
+name: termassert/window-focus
+pack: input-echo
+requires: [termassert]
+stage:
+  - use: launch-echo
+    with: { focus-reports: true }
+steps:
+  - ext: termassert.window-focus
+    with: { focused: false }
+  - wait: { until: { at: screen, text: { contains: "^[[O" } }, timeout: 5s }
+  - ext: termassert.window-focus
+    with: { focused: true }
+  - wait: { until: { at: screen, text: { contains: "^[[O^[[I" } }, timeout: 5s }

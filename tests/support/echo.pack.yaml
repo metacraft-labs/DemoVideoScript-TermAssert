@@ -1,0 +1,11 @@
+pack: 1
+name: input-echo
+root: screen
+roles:
+  screen:
+    properties: { text: text }
+    affordances: [wheel, click]
+stages:
+  launch-echo:
+    summary: Start the input echo (asking for focus reports when told to).
+    params: { focus-reports: bool }

@@ -14,11 +14,15 @@ for out-of-process consumers.
 What it delivers, and what it refuses:
 
 - keys, chords and typing as a terminal sends them, modifiers encoded as xterm does;
-  a combination no terminal expresses (Ctrl+Enter, Ctrl+Shift+a), the Meta modifier and
-  a horizontal wheel are refused, never sent without the modifier;
-- clicks, the wheel, and — when the application enables motion tracking, which the
+  a combination no terminal expresses (Ctrl+Enter, Ctrl+Shift+a) and the Meta modifier
+  are refused, never sent without the modifier;
+- clicks, the wheel in all four directions (SGR buttons 64 to 67), and — when the application enables motion tracking, which the
   binding declares — pointer moves, hovers and drags (TermAssert's press, motion and
   release);
+- the terminal window gaining or losing the focus, as the extension step
+  `ext: termassert.window-focus` with `{ focused: true | false }` (the scenario declares
+  `requires: [termassert]`): the FocusIn / FocusOut report, to an application that asked
+  for focus reports (DEC 1004), and refused for one that did not;
 - reads through the binding's view of the screen: what is not drawn cannot be read,
   and a scenario that needs it is `unsupported` here;
 - recordings as asciinema v2 casts, and stills as text and SVG.

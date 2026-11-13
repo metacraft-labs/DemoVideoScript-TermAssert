@@ -9,8 +9,10 @@
 ## (`surface.nim`), so it behaves as on every other tree-producing backend.
 ##
 ## Input is delivered as a terminal delivers it, and what TermAssert cannot
-## spell is refused, never approximated: Shift or Ctrl with a named key (its
-## `sendKey` would drop the modifier), the Meta modifier, a horizontal wheel.
+## spell is refused, never approximated: a combination no terminal encodes,
+## the Meta modifier, a focus report to an application that did not ask for
+## one. The extension step `termassert.window-focus` (`{ focused: bool }`) is
+## the terminal window gaining or losing the focus.
 ## Pointer motion and drags need the application to have enabled motion
 ## tracking; the binding declares the mode it enables, and TermAssert refuses a
 ## motion report the application did not ask for.
@@ -235,7 +237,18 @@ proc sendAction(a: Adapter; act: JsonNode) =
   let timing = act{"timing"}
   try:
     if act.hasKey("ext"):
-      raise backendError(beUnsupported, "no extension step '" & act["ext"].getStr & "'")
+      case act["ext"].getStr
+      of "termassert.window-focus":
+        # The terminal's window gaining or losing the focus: the report a
+        # terminal writes then (FocusIn / FocusOut), to an application that
+        # asked for it. One that did not is sent nothing by a real terminal,
+        # so the step is refused rather than sent.
+        let w = act{"with"}
+        if w == nil or w{"focused"} == nil or w["focused"].kind != JBool:
+          raise refuse("termassert.window-focus needs 'focused' (true or false)")
+        a.ctx.sess.sendFocus(w["focused"].getBool)
+      else:
+        raise backendError(beUnsupported, "no extension step '" & act["ext"].getStr & "'")
     elif act.hasKey("key"):
       a.sendKey(act["key"].getStr, a.held)
     elif act.hasKey("chord"):
@@ -307,11 +320,15 @@ proc sendAction(a: Adapter; act: JsonNode) =
       let dir = case v{"direction"}.getStr
         of "up": sdUp
         of "down": sdDown
-        else: raise refuse("TermAssert has no horizontal wheel")
+        of "left": sdLeft
+        of "right": sdRight
+        else: raise refuse("no wheel direction '" & v{"direction"}.getStr & "'")
       for _ in 1 .. v{"amount"}.getInt(1): a.ctx.sess.sendMouseScroll(row, col, dir)
     else:
       raise backendError(beProtocol, "send: no input action in " & $act)
   except MouseTrackingError as e:
+    raise refuse(e.msg)
+  except FocusReportingError as e:
     raise refuse(e.msg)
   a.idx.clear()
   a.sample()
