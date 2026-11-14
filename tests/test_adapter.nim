@@ -3,8 +3,9 @@
 ## it records, and what it refuses. Every check runs the real application
 ## through the built `dvs-termassert-notes`; no stand-ins.
 
-import std/[json, os, osproc, strutils, unittest, streams, strtabs, algorithm]
+import std/[json, os, osproc, strutils, unittest, streams, strtabs, algorithm, monotimes, times]
 import nim_libvterm
+import demo_video_script_termassert
 
 let bin = getEnv("DVS_BIN_DIR", "build/bin")
 let tool = bin / "dvs-termassert-notes"
@@ -101,6 +102,33 @@ suite "the TermAssert adapter":
     checkpoint $r["steps"]
     check r["outcome"].getStr == "passed"
     check readFile(dir / "outside.txt") == "written outside"
+
+  test "the settle rule, on a scripted clock: the quiet span after the last output":
+    # a read waits its idle time on the clock, and returns what the script
+    # says the application wrote meanwhile
+    var t = getMonoTime()
+    var script = @[3, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    var reads = 0
+    proc drain(idleMs: int): int =
+      t = t + initDuration(milliseconds = idleMs)
+      result = (if reads < script.len: script[reads] else: 0)
+      inc reads
+    check settleOver(drain, proc (): MonoTime = t, 5000)
+    # the output at the fourth read restarts the span: 300 ms at 60 ms a read
+    # is five more quiet reads after it
+    check reads == 4 + 5
+    # a pause shorter than the span is not the end of a redraw
+    t = getMonoTime()
+    reads = 0
+    script = @[3, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0]
+    check settleOver(drain, proc (): MonoTime = t, 5000)
+    check reads == 6 + 5
+    # output that never stops never settles
+    t = getMonoTime()
+    reads = 0
+    script = newSeq[int](200)
+    for i in 0 ..< script.len: script[i] = 1
+    check not settleOver(drain, proc (): MonoTime = t, 1000)
 
   test "settled waits for the last of several redraw bursts":
     let slow = bin / "slow-redraw"

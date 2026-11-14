@@ -120,20 +120,39 @@ proc writeCast(a: Adapter): string =
 
 # --- the surface ------------------------------------------------------------------------
 
-const QuietMs = 60
+const
+  QuietIntervalMs* = 60
+    ## How long one read waits for output before it counts as quiet.
+  QuietSpanMs* = 300
+    ## How long the screen must stay unchanged, by the clock, to have settled:
+    ## longer than an application's pause between the bursts of one redraw.
+
+proc quietLongEnough*(quietSince, sampled: MonoTime): bool =
+  ## Whether output silent from `quietSince` to `sampled` has settled: at
+  ## least `QuietSpanMs` of the clock.
+  (sampled - quietSince).inMilliseconds >= QuietSpanMs
+
+proc settleOver*(drain: proc (idleMs: int): int; now: proc (): MonoTime;
+                 timeoutMs: int): bool =
+  ## The settle rule over any output source and clock: `drain` reads until
+  ## `idleMs` of silence and returns the bytes it read; the screen has
+  ## settled once no byte arrived for `QuietSpanMs`, measured by the clock
+  ## from the end of the last read that brought output, not by a count of
+  ## reads (a read's own duration varies with the machine's load).
+  let deadline = now() + initDuration(milliseconds = timeoutMs)
+  var quietSince = now()
+  while now() < deadline:
+    if drain(QuietIntervalMs) > 0:
+      quietSince = now()
+    elif quietLongEnough(quietSince, now()):
+      return true
+  false
 
 proc settleScreen(a: Adapter; timeoutMs = 3000): bool =
-  ## The screen stopped changing: two consecutive windows of `QuietMs` with no
-  ## output. One short window is not enough on a loaded machine, where the
-  ## application may not have been scheduled yet to answer the input.
-  let deadline = getMonoTime() + initDuration(milliseconds = timeoutMs)
-  var quiet = 0
-  while getMonoTime() < deadline:
-    if a.ctx.sess.drainOutput(QuietMs) == 0:
-      inc quiet
-      if quiet >= 2: return true
-    else: quiet = 0
-  false
+  ## The screen stopped changing (`settleOver` on the session's output).
+  let ctx = a.ctx
+  settleOver(proc (idleMs: int): int = ctx.sess.drainOutput(idleMs),
+             proc (): MonoTime = getMonoTime(), timeoutMs)
 
 proc refresh(a: Adapter) =
   a.requireRunning()

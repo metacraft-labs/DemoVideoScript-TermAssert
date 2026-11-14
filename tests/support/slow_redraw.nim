@@ -1,11 +1,9 @@
 ## A binding for a terminal application that answers each key in three bursts,
-## 150 ms apart ("a", then "ab", then "abc" on its first row), so `settled`
-## can be checked deterministically: it must not be reported before the last
-## burst. A quiet window is a drain that waits 60 ms of silence and then 60 ms
-## more with nothing read, so one quiet window needs a pause of 120 ms and the
-## two the adapter requires need 180 ms: a 150 ms pause tells them apart, and
-## settling after one window reads the screen mid-redraw (50 ms pauses could
-## not tell one window from two).
+## 150 ms apart ("a", then "ab", then "abc" on its first row): `settled` must
+## not be reported before the last burst. The adapter settles after
+## `QuietSpanMs` (300 ms) of silence by the clock, twice the pause between the
+## bursts. The rule itself is checked on a scripted clock in
+## `test_adapter.nim`; this application checks it against a real pty.
 ##
 ## The application is a real `sh` script in a real pty; the binding reads its
 ## first row. Not a stand-in for anything: it is the smallest application with
