@@ -1,37 +1,49 @@
-# dvs3 mutation results — 2026-10-28 19:56:18 +0200
+# dvs3 mutation results — 2026-11-14 15:34:04 +0200
 # kill command: just test
 
-KILLED   T1      134.4s  an SGR report one cell off
-           | ../dvs-core7c/src/demo_video_script/cli.nim(24, 52) Warning: imported and not used: 'times' [UnusedImport]
-           | DVS_NOTES_TUI=$BUILD_DIR/bin/notes-tui $BUILD_DIR/bin/dvs-termassert-notes conformance --pack ../dvs-core7c/src/../conformance/pack/notes-app.pack.yaml --backen
-           | error: Recipe `test-conformance` failed on line 39 with exit code 1
-KILLED   T2      137.6s  the Shift modifier dropped
-           | ../dvs-core7c/src/demo_video_script/cli.nim(24, 52) Warning: imported and not used: 'times' [UnusedImport]
-           | DVS_NOTES_TUI=$BUILD_DIR/bin/notes-tui $BUILD_DIR/bin/dvs-termassert-notes conformance --pack ../dvs-core7c/src/../conformance/pack/notes-app.pack.yaml --backen
-           | error: Recipe `test-conformance` failed on line 39 with exit code 1
-KILLED   T3      149.2s  the drag capability declared without motion tracking
-           | DVS_NOTES_TUI=$BUILD_DIR/bin/notes-tui DVS_BIN_DIR=$BUILD_DIR/bin DVS_ROOT=../dvs-core7c/src/.. nim c -r --hints:off --passC:-w --mm:orc --threads:on --path:src
+KILLED   T1      217.2s  an SGR report one cell off
+           | ../dvs/src/demo_video_script/cli.nim(25, 52) Warning: imported and not used: 'times' [UnusedImport]
+           | DVS_NOTES_TUI=$BUILD_DIR/bin/notes-tui $BUILD_DIR/bin/dvs-termassert-notes conformance --pack ../DemoVideoScript/src/../conformance/pack/notes-app.pack.yaml --b
+           | error: Recipe `test-conformance` failed on line 40 with exit code 1
+KILLED   T2      285.0s  the Shift modifier dropped
+           | ../dvs/src/demo_video_script/cli.nim(25, 52) Warning: imported and not used: 'times' [UnusedImport]
+           | DVS_NOTES_TUI=$BUILD_DIR/bin/notes-tui $BUILD_DIR/bin/dvs-termassert-notes conformance --pack ../DemoVideoScript/src/../conformance/pack/notes-app.pack.yaml --b
+           | error: Recipe `test-conformance` failed on line 40 with exit code 1
+KILLED   T3      324.7s  the drag capability declared without motion tracking
+           | DVS_NOTES_TUI=$BUILD_DIR/bin/notes-tui DVS_BIN_DIR=$BUILD_DIR/bin DVS_ROOT=../DemoVideoScript/src/.. nim c -r --hints:off --passC:-w --mm:orc --threads:on --pat
            | Error: execution of an external program failed: '$BUILD_DIR/test-bin/test_adapter'
-           | error: Recipe `test-adapter` failed on line 44 with exit code 1
-KILLED   T4      116.3s  a stale screen read: the screen is not re-read after an input
-           | ../dvs-core7c/src/demo_video_script/cli.nim(24, 52) Warning: imported and not used: 'times' [UnusedImport]
-           | DVS_NOTES_TUI=$BUILD_DIR/bin/notes-tui $BUILD_DIR/bin/dvs-termassert-notes conformance --pack ../dvs-core7c/src/../conformance/pack/notes-app.pack.yaml --backen
-           | error: Recipe `test-conformance` failed on line 39 with exit code 1
-KILLED   T5      122.4s  settled after one quiet window: before the screen stopped changing
-           | DVS_NOTES_TUI=$BUILD_DIR/bin/notes-tui DVS_BIN_DIR=$BUILD_DIR/bin DVS_ROOT=../dvs-core7c/src/.. nim c -r --hints:off --passC:-w --mm:orc --threads:on --path:src
+           | error: Recipe `test-adapter` failed on line 45 with exit code 1
+KILLED   T4      223.3s  a stale screen read: the screen is not re-read after an input
+           | ../dvs/src/demo_video_script/cli.nim(25, 52) Warning: imported and not used: 'times' [UnusedImport]
+           | DVS_NOTES_TUI=$BUILD_DIR/bin/notes-tui $BUILD_DIR/bin/dvs-termassert-notes conformance --pack ../DemoVideoScript/src/../conformance/pack/notes-app.pack.yaml --b
+           | error: Recipe `test-conformance` failed on line 40 with exit code 1
+KILLED   T5      205.9s  settled after one quiet read: before the screen stopped changing
+           | DVS_NOTES_TUI=$BUILD_DIR/bin/notes-tui DVS_BIN_DIR=$BUILD_DIR/bin DVS_ROOT=../DemoVideoScript/src/.. nim c -r --hints:off --passC:-w --mm:orc --threads:on --pat
            | Error: execution of an external program failed: '$BUILD_DIR/test-bin/test_adapter'
-           | error: Recipe `test-adapter` failed on line 44 with exit code 1
-KILLED   T5b      92.1s  settled after a 1 ms quiet window
-           | DVS_NOTES_TUI=$BUILD_DIR/bin/notes-tui DVS_BIN_DIR=$BUILD_DIR/bin DVS_ROOT=../dvs-core7c/src/.. nim c -r --hints:off --passC:-w --mm:orc --threads:on --path:src
+           | error: Recipe `test-adapter` failed on line 45 with exit code 1
+KILLED   T5b     301.1s  output does not restart the quiet span
+           | DVS_NOTES_TUI=$BUILD_DIR/bin/notes-tui DVS_BIN_DIR=$BUILD_DIR/bin DVS_ROOT=../DemoVideoScript/src/.. nim c -r --hints:off --passC:-w --mm:orc --threads:on --pat
            | Error: execution of an external program failed: '$BUILD_DIR/test-bin/test_adapter'
-           | error: Recipe `test-adapter` failed on line 44 with exit code 1
-KILLED   T6      153.2s  Shift dropped from a named key
-           | DVS_NOTES_TUI=$BUILD_DIR/bin/notes-tui DVS_BIN_DIR=$BUILD_DIR/bin DVS_ROOT=../dvs-core7c/src/.. nim c -r --hints:off --passC:-w --mm:orc --threads:on --path:src
+           | error: Recipe `test-adapter` failed on line 45 with exit code 1
+KILLED   T6      281.1s  Shift dropped from a named key
+           | DVS_NOTES_TUI=$BUILD_DIR/bin/notes-tui DVS_BIN_DIR=$BUILD_DIR/bin DVS_ROOT=../DemoVideoScript/src/.. nim c -r --hints:off --passC:-w --mm:orc --threads:on --pat
            | Error: execution of an external program failed: '$BUILD_DIR/test-bin/test_adapter'
-           | error: Recipe `test-adapter` failed on line 44 with exit code 1
-KILLED   T7      152.7s  a key sent without the modifier no terminal can encode
-           | DVS_NOTES_TUI=$BUILD_DIR/bin/notes-tui DVS_BIN_DIR=$BUILD_DIR/bin DVS_ROOT=../dvs-core7c/src/.. nim c -r --hints:off --passC:-w --mm:orc --threads:on --path:src
+           | error: Recipe `test-adapter` failed on line 45 with exit code 1
+KILLED   T7      279.5s  a key sent without the modifier no terminal can encode
+           | DVS_NOTES_TUI=$BUILD_DIR/bin/notes-tui DVS_BIN_DIR=$BUILD_DIR/bin DVS_ROOT=../DemoVideoScript/src/.. nim c -r --hints:off --passC:-w --mm:orc --threads:on --pat
            | Error: execution of an external program failed: '$BUILD_DIR/test-bin/test_adapter'
-           | error: Recipe `test-adapter` failed on line 44 with exit code 1
+           | error: Recipe `test-adapter` failed on line 45 with exit code 1
+KILLED   T8      389.9s  the wheel turned left sent as right
+           | DVS_NOTES_TUI=$BUILD_DIR/bin/notes-tui DVS_BIN_DIR=$BUILD_DIR/bin DVS_ROOT=../DemoVideoScript/src/.. nim c -r --hints:off --passC:-w --mm:orc --threads:on --pat
+           | Error: execution of an external program failed: '$BUILD_DIR/test-bin/test_adapter'
+           | error: Recipe `test-adapter` failed on line 45 with exit code 1
+KILLED   T9      307.6s  a focus loss reported as a gain
+           | DVS_NOTES_TUI=$BUILD_DIR/bin/notes-tui DVS_BIN_DIR=$BUILD_DIR/bin DVS_ROOT=../DemoVideoScript/src/.. nim c -r --hints:off --passC:-w --mm:orc --threads:on --pat
+           | Error: execution of an external program failed: '$BUILD_DIR/test-bin/test_adapter'
+           | error: Recipe `test-adapter` failed on line 45 with exit code 1
+KILLED   T10     300.5s  an act step that changes nothing
+           | DVS_NOTES_TUI=$BUILD_DIR/bin/notes-tui DVS_BIN_DIR=$BUILD_DIR/bin DVS_ROOT=../DemoVideoScript/src/.. nim c -r --hints:off --passC:-w --mm:orc --threads:on --pat
+           | Error: execution of an external program failed: '$BUILD_DIR/test-bin/test_adapter'
+           | error: Recipe `test-adapter` failed on line 45 with exit code 1
 
-8/8 killed, 0 survived
+11/11 killed, 0 survived
