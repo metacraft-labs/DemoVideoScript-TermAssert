@@ -30,6 +30,8 @@ ARMS = [
     Arm("T5b", A, "    if drain(QuietIntervalMs) > 0:\n      quietSince = now()",
         "    if drain(QuietIntervalMs) > 0:\n      discard",
         "output does not restart the quiet span"),
+    Arm("T5c", A, "    elif pending() > 0:\n      quietSince = now()", "    elif pending() > 0:\n      discard",
+        "settled with input the application has not read yet"),
     Arm("T6", A, '  if kmShift in mods: prefix.add "shift+"', '  discard',
         "Shift dropped from a named key"),
     Arm("T7", A, "  except KeyEncodingError as e: raise refuse(e.msg)",

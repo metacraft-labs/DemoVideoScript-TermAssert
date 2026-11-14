@@ -132,17 +132,23 @@ proc quietLongEnough*(quietSince, sampled: MonoTime): bool =
   ## least `QuietSpanMs` of the clock.
   (sampled - quietSince).inMilliseconds >= QuietSpanMs
 
-proc settleOver*(drain: proc (idleMs: int): int; now: proc (): MonoTime;
-                 timeoutMs: int): bool =
+proc settleOver*(drain: proc (idleMs: int): int; pending: proc (): int;
+                 now: proc (): MonoTime; timeoutMs: int): bool =
   ## The settle rule over any output source and clock: `drain` reads until
-  ## `idleMs` of silence and returns the bytes it read; the screen has
-  ## settled once no byte arrived for `QuietSpanMs`, measured by the clock
-  ## from the end of the last read that brought output, not by a count of
-  ## reads (a read's own duration varies with the machine's load).
+  ## `idleMs` of silence and returns the bytes it read, `pending` says how
+  ## much input the application has not read yet. The screen has settled
+  ## once the application has read all its input and no byte arrived for
+  ## `QuietSpanMs` since, measured by the clock from the end of the last read
+  ## that brought output, not by a count of reads (a read's own duration
+  ## varies with the machine's load). Input still unread means the
+  ## application has not answered it yet, however long the screen was quiet:
+  ## on a loaded machine it may not have been scheduled since the input.
   let deadline = now() + initDuration(milliseconds = timeoutMs)
   var quietSince = now()
   while now() < deadline:
     if drain(QuietIntervalMs) > 0:
+      quietSince = now()
+    elif pending() > 0:
       quietSince = now()
     elif quietLongEnough(quietSince, now()):
       return true
@@ -152,6 +158,7 @@ proc settleScreen(a: Adapter; timeoutMs = 3000): bool =
   ## The screen stopped changing (`settleOver` on the session's output).
   let ctx = a.ctx
   settleOver(proc (idleMs: int): int = ctx.sess.drainOutput(idleMs),
+             proc (): int = max(0, ctx.sess.pendingInput()),
              proc (): MonoTime = getMonoTime(), timeoutMs)
 
 proc refresh(a: Adapter) =

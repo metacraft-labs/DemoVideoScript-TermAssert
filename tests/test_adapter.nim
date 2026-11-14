@@ -113,7 +113,7 @@ suite "the TermAssert adapter":
       t = t + initDuration(milliseconds = idleMs)
       result = (if reads < script.len: script[reads] else: 0)
       inc reads
-    check settleOver(drain, proc (): MonoTime = t, 5000)
+    check settleOver(drain, proc (): int = 0, proc (): MonoTime = t, 5000)
     # the output at the fourth read restarts the span: 300 ms at 60 ms a read
     # is five more quiet reads after it
     check reads == 4 + 5
@@ -121,14 +121,27 @@ suite "the TermAssert adapter":
     t = getMonoTime()
     reads = 0
     script = @[3, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0]
-    check settleOver(drain, proc (): MonoTime = t, 5000)
+    check settleOver(drain, proc (): int = 0, proc (): MonoTime = t, 5000)
     check reads == 6 + 5
+    # input the application has not read holds the span off, however quiet
+    # the screen: it starts once the input is read
+    t = getMonoTime()
+    reads = 0
+    script = newSeq[int](20)
+    var unread = @[3, 3, 3, 3, 3, 3, 3, 3, 0]
+    var asks = 0
+    proc pending(): int =
+      result = (if asks < unread.len: unread[asks] else: 0)
+      inc asks
+    check settleOver(drain, pending, proc (): MonoTime = t, 5000)
+    # eight quiet reads with input unread, then the read input and five more
+    check reads == 8 + 5
     # output that never stops never settles
     t = getMonoTime()
     reads = 0
     script = newSeq[int](200)
     for i in 0 ..< script.len: script[i] = 1
-    check not settleOver(drain, proc (): MonoTime = t, 1000)
+    check not settleOver(drain, proc (): int = 0, proc (): MonoTime = t, 1000)
 
   test "settled waits for the last of several redraw bursts":
     let slow = bin / "slow-redraw"
