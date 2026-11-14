@@ -1,0 +1,9 @@
+scenario: 1
+name: termassert/act-writes-a-file
+pack: input-echo
+stage:
+  - use: launch-echo
+steps:
+  - act: { use: write-file, with: { path: outside.txt, content: "written outside" } }
+  - wheel: { at: screen, direction: up }
+  - wait: { until: { at: screen, text: { contains: "^[[<64;" } }, timeout: 5s }

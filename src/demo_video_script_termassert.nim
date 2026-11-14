@@ -48,6 +48,10 @@ type
       ## A condition the binding detects; none() when it does not know the name.
     resolveChord*: proc (ctx: TermContext; operation: string): Option[string] {.closure.}
     anchor*: proc (ctx: TermContext; n: SurfaceNode; anchor: string): Option[(int, int)] {.closure.}
+    act*: proc (ctx: TermContext; use: string; args: JsonNode) {.closure.}
+      ## An `act` step: a change outside the application (another program
+      ## writes a file), which the binding's pack declares under `actions:`.
+      ## nil: the binding makes none, and the backend has no `act` capability.
 
   Recording = object
     on: bool
@@ -343,6 +347,7 @@ proc capabilitiesFor(b: TermBinding): seq[string] =
   if b.tracking == mtMove:
     result.add "input.pointer.move"
     result.add "input.hover"
+  if b.act != nil: result.add "act"
 
 proc newTermAssertBackend*(binding: TermBinding; defect = tdNone): Backend =
   let a = Adapter(b: binding, ctx: TermContext(state: newJObject()), defect: defect)
@@ -432,6 +437,9 @@ proc newTermAssertBackend*(binding: TermBinding; defect = tdNone): Backend =
   result.hit = proc (x, y: float): Option[string] =
     a.refresh()
     a.tree.hit(x, y)
+  if binding.act != nil:
+    result.act = proc (use: string; args: JsonNode) =
+      binding.act(a.ctx, use, args)
   result.close = proc () =
     if a.ctx.running:
       a.ctx.sess.terminate()

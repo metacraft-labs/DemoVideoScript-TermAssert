@@ -92,6 +92,16 @@ suite "the TermAssert adapter":
     check r["outcome"].getStr == "failed"
     check "did not ask for focus reports" in $r["steps"]
 
+  test "an act step is the binding's change outside the application, between two steps":
+    let dir = getTempDir() / "dta-act-" & $getCurrentProcessId()
+    createDir(dir)
+    defer: removeDir(dir)
+    putEnv("DTA_ACT_DIR", dir)
+    let r = runEcho("act-writes-a-file.yaml")
+    checkpoint $r["steps"]
+    check r["outcome"].getStr == "passed"
+    check readFile(dir / "outside.txt") == "written outside"
+
   test "settled waits for the last of several redraw bursts":
     let slow = bin / "slow-redraw"
     for i in 1 .. 3:

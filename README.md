@@ -23,6 +23,8 @@ What it delivers, and what it refuses:
   `ext: termassert.window-focus` with `{ focused: true | false }` (the scenario declares
   `requires: [termassert]`): the FocusIn / FocusOut report, to an application that asked
   for focus reports (DEC 1004), and refused for one that did not;
+- `act` steps (a change outside the application, such as another program writing a
+  file), performed by the binding's `act` procedure for the actions its pack declares;
 - reads through the binding's view of the screen: what is not drawn cannot be read,
   and a scenario that needs it is `unsupported` here;
 - recordings as asciinema v2 casts, and stills as text and SVG.

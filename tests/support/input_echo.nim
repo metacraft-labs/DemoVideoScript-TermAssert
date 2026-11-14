@@ -2,13 +2,14 @@
 ## the terminal writes to it (`cat -v`: ESC as `^[`), so a check can read what
 ## an input arrived as: a horizontal wheel as SGR button 66 or 67, a focus
 ## change as `CSI I` / `CSI O`. It asks for SGR mouse reports, and for focus
-## reports when staged with `focus-reports: true`.
+## reports when staged with `focus-reports: true`. Its one action,
+## `write-file`, is another program writing a file under `$DTA_ACT_DIR`.
 ##
 ## The application is a real `sh` script in a real pty; the binding reads its
 ## rows. Not a stand-in for anything: it is the smallest application that
 ## shows its input.
 
-import std/[json, options, strutils, tables, times]
+import std/[json, options, os, strutils, tables, times]
 import term_assert
 import demo_video_script/[backend, cli]
 import demo_video_script_termassert
@@ -34,7 +35,10 @@ proc echoBinding(): TermBinding =
       result.root = node("screen", 0, 0, 80, 6, %*{"text": all}),
     condition: proc (ctx: TermContext; name: string): Option[bool] = none(bool),
     resolveChord: proc (ctx: TermContext; op: string): Option[string] = none(string),
-    anchor: nil)
+    anchor: nil,
+    act: proc (ctx: TermContext; use: string; args: JsonNode) =
+      if use != "write-file": raise newException(ValueError, "no action '" & use & "'")
+      writeFile(getEnv("DTA_ACT_DIR") / args{"path"}.getStr, args{"content"}.getStr))
 
 when isMainModule:
   var builtins = initTable[string, BackendFactory]()

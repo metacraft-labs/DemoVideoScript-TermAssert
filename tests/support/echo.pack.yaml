@@ -9,3 +9,7 @@ stages:
   launch-echo:
     summary: Start the input echo (asking for focus reports when told to).
     params: { focus-reports: bool }
+actions:
+  write-file:
+    summary: Another program writes a file (`path`) with `content`; the application is not told.
+    params: { path: text, content: text }
