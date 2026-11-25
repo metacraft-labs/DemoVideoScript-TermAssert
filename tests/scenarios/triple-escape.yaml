@@ -1,0 +1,10 @@
+scenario: 1
+name: termassert/triple-escape
+pack: input-echo
+stage:
+  - use: launch-echo
+steps:
+  # spaced by the adapter, the three Escapes arrive as three bytes the
+  # application reads one by one (`cat -v` shows each as `^[`)
+  - chord: Esc Esc Esc
+  - wait: { until: { at: screen, text: { contains: "^[^[^[" } }, timeout: 5s }

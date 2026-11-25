@@ -244,6 +244,23 @@ proc sendKey(a: Adapter; key: string; mods: set[KeyModifier]) =
 proc pause(ms: float) =
   if ms > 0: sleep(int(ms + 0.5))
 
+const
+  ChordKeyGapMs* = 150
+    ## The pause between the keys of a chord sequence (`g g`, `Esc Esc Esc`),
+    ## in every mode: a person's quick taps, not one burst. Sent back to back,
+    ## the keys reach the application in one read, where a terminal framer
+    ## folds `ESC ESC` into a single Escape and a sequence the application
+    ## times (a triple Escape inside a second) is lost; spaced like this, three
+    ## keys still fit well inside such a window.
+
+proc sendChordSequence*(chords: openArray[string]; send: proc (chord: string);
+                        wait: proc (ms: float)) =
+  ## Each chord of the sequence through `send`, `ChordKeyGapMs` apart (no
+  ## pause before the first or after the last).
+  for i, c in chords:
+    if i > 0: wait(float(ChordKeyGapMs))
+    send(c)
+
 proc buttonOf(v: JsonNode): term_assert.MouseButton =
   case v{"button"}.getStr("left")
   of "middle": mbMiddle
@@ -282,9 +299,11 @@ proc sendAction(a: Adapter; act: JsonNode) =
     elif act.hasKey("key"):
       a.sendKey(act["key"].getStr, a.held)
     elif act.hasKey("chord"):
-      for c in act["chord"].getStr.split(' '):
-        let parts = c.split('+')
-        a.sendKey(parts[^1], a.held + modsOf(parts[0 ..< parts.high]))
+      sendChordSequence(act["chord"].getStr.split(' '),
+        proc (c: string) =
+          let parts = c.split('+')
+          a.sendKey(parts[^1], a.held + modsOf(parts[0 ..< parts.high])),
+        pause)
     elif act.hasKey("type"):
       let text = (if act["type"].kind == JString: act["type"].getStr else: act["type"]{"text"}.getStr)
       let delays = timing{"keyDelaysMs"}

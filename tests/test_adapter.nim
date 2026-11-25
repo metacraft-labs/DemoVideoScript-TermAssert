@@ -62,6 +62,21 @@ suite "the TermAssert adapter":
     checkpoint $r["message"]
     check r["outcome"].getStr == "passed"
 
+  test "a chord sequence is sent key by key, ChordKeyGapMs apart":
+    var log: seq[string]
+    sendChordSequence(["Esc", "Esc", "Esc"],
+      proc (c: string) = log.add("send " & c),
+      proc (ms: float) = log.add("wait " & $int(ms)))
+    let gap = "wait " & $ChordKeyGapMs
+    check log == @["send Esc", gap, "send Esc", gap, "send Esc"]
+    # spaced like a person's taps, and three of them well inside a second
+    check ChordKeyGapMs >= 100
+    check 2 * ChordKeyGapMs < 500
+    log.setLen 0
+    sendChordSequence(["Shift+Down"], proc (c: string) = log.add("send " & c),
+                      proc (ms: float) = log.add("wait"))
+    check log == @["send Shift+Down"]
+
   test "a key no terminal can encode is refused, never sent without its modifier":
     let r = runJson(here / "scenarios/ctrl-enter.yaml", "termassert")
     check r["outcome"].getStr == "failed"
@@ -80,6 +95,11 @@ suite "the TermAssert adapter":
 
   test "the wheel turns four ways: SGR buttons 66 and 67 left and right":
     let r = runEcho("wheel-four-ways.yaml")
+    checkpoint $r["steps"]
+    check r["outcome"].getStr == "passed"
+
+  test "a triple Escape reaches the application as three Escapes":
+    let r = runEcho("triple-escape.yaml")
     checkpoint $r["steps"]
     check r["outcome"].getStr == "passed"
 
