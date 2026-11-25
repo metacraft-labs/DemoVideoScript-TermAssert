@@ -4,6 +4,7 @@
 ## through the built `dvs-termassert-notes`; no stand-ins.
 
 import std/[json, os, osproc, strutils, unittest, streams, strtabs, algorithm, monotimes, times]
+from std/unicode import validateUtf8
 import nim_libvterm
 import demo_video_script_termassert
 
@@ -175,6 +176,18 @@ suite "the TermAssert adapter":
       checkpoint o
       check code == 0
 
+  test "a cast event never ends inside a UTF-8 character":
+    let s = "ab▕≡▏"                       # 2 ASCII bytes, then three 3-byte characters
+    check completeUtf8End(s, 0) == s.len  # whole
+    check completeUtf8End(s[0 ..< 3], 0) == 2   # the first byte of ▕ is held back
+    check completeUtf8End(s[0 ..< 4], 0) == 2   # and its first two
+    check completeUtf8End(s[0 ..< 5], 0) == 5
+    check completeUtf8End(s[0 ..< 6], 2) == 5   # from an offset, the same
+    check completeUtf8End("é", 0) == 2 and completeUtf8End("é"[0 ..< 1], 0) == 0
+    check completeUtf8End("\xF0\x9F\x98", 0) == 0   # an emoji's first three of four
+    check completeUtf8End("\xF0\x9F\x98\x80", 0) == 4
+    check completeUtf8End("", 0) == 0
+
   test "a realistic run records a cast that replays to the final screen":
     let dir = getTempDir() / "dta-cast-" & $getCurrentProcessId()
     defer: removeDir(dir)
@@ -195,6 +208,7 @@ suite "the TermAssert adapter":
       check e[0].getFloat >= last
       last = e[0].getFloat
       check e[1].getStr == "o"
+      check validateUtf8(e[2].getStr) == -1   # each event decodes on its own
       s.feed(e[2].getStr)
     var still: seq[string]
     for l in readFile(dir / "steps/9-after-archive.txt").splitLines: still.add l.strip(leading = false)

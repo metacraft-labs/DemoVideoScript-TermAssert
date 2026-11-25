@@ -99,15 +99,37 @@ proc requireRunning(a: Adapter) =
 
 # --- recording ----------------------------------------------------------------------
 
+proc completeUtf8End*(bytes: string; start: int): int =
+  ## The end of the longest stretch of `bytes` from `start` that does not
+  ## stop inside a UTF-8 sequence: an event of an asciicast is a JSON
+  ## string, and a character the application wrote in two reads must not be
+  ## split across two events (the first would end, and the second begin, with
+  ## bytes no decoder accepts). The held-back bytes start the next event.
+  result = bytes.len
+  var i = bytes.len - 1
+  var cont = 0
+  while i >= start and cont < 3 and (ord(bytes[i]) and 0xC0) == 0x80:
+    inc cont
+    dec i
+  if i < start: return
+  let lead = ord(bytes[i])
+  let need =
+    if (lead and 0xE0) == 0xC0: 1
+    elif (lead and 0xF0) == 0xE0: 2
+    elif (lead and 0xF8) == 0xF0: 3
+    else: 0
+  if need > cont: result = i
+
 proc sample(a: Adapter) =
   ## Appends the bytes the application wrote since the last sample to the cast.
   if not a.rec.on or not a.ctx.running or a.rec.deterministic: return
   discard a.ctx.sess.drainOutput(0)
   let bytes = a.ctx.sess.transcriptBytes()
-  if bytes.len > a.rec.offset:
+  let stop = completeUtf8End(bytes, a.rec.offset)
+  if stop > a.rec.offset:
     let t = float((getMonoTime() - a.rec.t0).inMicroseconds) / 1e6
-    a.rec.events.add %*[t, "o", bytes[a.rec.offset .. ^1]]
-    a.rec.offset = bytes.len
+    a.rec.events.add %*[t, "o", bytes[a.rec.offset ..< stop]]
+    a.rec.offset = stop
 
 proc writeCast(a: Adapter): string =
   result = a.rec.dir / "session.cast"
