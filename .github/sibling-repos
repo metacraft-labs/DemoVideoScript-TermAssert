@@ -1,7 +1,7 @@
 # Siblings cloned by setup-dev-env, each at an explicit commit: the adapter is
 # built and qualified against exactly these.
-DemoVideoScript=197d512ace3e11ce2c70384bc4262cf8cdc936f8  # DemoVideoScript@agents: act steps
-TermAssert=392b0a562d348ff33e9a5a0894c3364ad295e6c3  # TermAssert@agents: pendingInput
-nim-libvterm=a96c190d57f3c8593e6f6116cc06f08c2bde7c10  # nim-libvterm@agents: Screen.mouseTracking
-nim-pty=2845abd58dd2073475177301590c8b51aa5c9094  # nim-pty@agents
-TermAssertClient=57a620b1a88b36320c0fa70b26e4a5d5c295d24a  # TermAssertClient@agents
+DemoVideoScript=b2dd47d345794d53966102b7ee151e46f7d52daf  # DemoVideoScript@agents: a client action that loads a page can skip settled
+TermAssert=a28162e548ca48e31db9d0b85b28b1cbdc56bb66  # TermAssert: the revision codetracer's scenario lane builds the terminal flavour with
+nim-libvterm=3abed5c2ae593125fc19425b0e38ad0d22936047  # nim-libvterm: the revision codetracer's scenario lane builds the terminal flavour with
+nim-pty=6ffb8d788e8a740ca78ec29c7a3a489a13818bcb  # nim-pty: the revision codetracer's scenario lane builds the terminal flavour with
+TermAssertClient=c64fa156151c8eecc1438180bb6288025b2c7987  # TermAssertClient: the revision codetracer's scenario lane builds the terminal flavour with
